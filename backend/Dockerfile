@@ -24,4 +24,29 @@
 # - Final image should be as small as possible
 # ===========================================
 
-# YOUR CODE HERE:
+# Stage 1: builder
+FROM node:18-alpine AS builder
+WORKDIR /app
+
+# Copy package manifests and install all deps
+COPY package.json package-lock.json* ./
+RUN npm ci --silent || npm install --production --silent
+
+# Copy source
+COPY . .
+
+# Stage 2: production image
+FROM node:18-alpine
+WORKDIR /app
+
+# Create non-root user
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+# Copy node_modules and app from builder
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app .
+
+USER appuser
+ENV NODE_ENV=production
+EXPOSE 8080
+CMD ["node", "server.js"]
