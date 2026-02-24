@@ -32,3 +32,38 @@ Thumbs.db
 
 # Docker
 docker-compose.override.yml
+
+# Additional common ignores
+# Editor/IDE
+*.sublime-workspace
+*.sublime-project
+
+# Next/Vite/React build outputs
+.next/
+out/
+dist/
+build/
+
+# Parcel
+.cache/
+.parcel-cache/
+
+# Logs and debug
+*.log
+
+# Lock files (if you intentionally want them in repo, remove these)
+# package-lock.json
+# yarn.lock
+
+# Certificates
+*.pem
+
+# Temporary files
+tmp/
+temp/
+
+# Binary artifacts
+*.exe
+*.dll
+*.so
+
