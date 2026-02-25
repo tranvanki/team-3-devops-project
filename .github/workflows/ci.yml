@@ -1,55 +1,51 @@
 name: CI Pipeline
 
-# This workflow runs on two triggers:
-# 1. When code is pushed to the 'main' branch
-# 2. When a Pull Request is opened/updated against the 'main'
 on:
-push:
-branches: [ main ]
-pull_request:
-branches: [ main ]
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
-build-and-test:
-name: Build & Test
-runs-on: ubuntu-latest
-
-# This starts a Postgres database *for this job*
-services:
-db:
-image: postgres:14-alpine
-environment:
-- POSTGRES_USER=ntkien
-- POSTGRES_PASSWORD=4MxQ5X43pN0biJgyW5gJQWwEnsmfo0Ao
-- POSTGRES_DB=ntkien_devop_self_study
-ports:
-- 5432:5432
-# This health check ensures the DB is ready before tests
-
-
-options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-
-steps:
-# Step 1: Get our project code onto the runner
-- name: Checkout code
-  uses: actions/checkout@v3
-
-# Step 2: Install Node.js v18
-- name: Setup Node.js
-  uses: actions/setup-node@v3
-  with:
-  node-version: '18'
-  cache: 'npm' # Caches npm packages for faster
- 
-
-# Step 3: Install our app's dependencies
-- name: Install dependencies
-  run: npm install
-
-# Step 4: Run the tests. We must provide the DB env vars!
-- name: Run tests
-  run: npm test
-  env:DB_HOST: localhost # GitHub maps service
-  DB_USER: myuser
-  DB_PASSWORD: mypass
-  DB_NAME: mydatabase
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: todos_db
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+      
+      - name: Initialize Database Schema
+        run: PGPASSWORD=postgres psql -h localhost -U postgres -d todos_db -f database/database.sql
+      
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: npm ci
+      
+      - name: Run backend tests
+        working-directory: ./backend
+        run: npm test
+        env:
+          NODE_ENV: test
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          DB_NAME: todos_db
