@@ -25,6 +25,42 @@ const pool = process.env.DATABASE_URL
         ssl: sslConfig,
      });
 
+// ✅ AUTO-CREATE TABLE ON STARTUP
+const initializeDatabase = async () => {
+   try {
+      await pool.query(`
+         CREATE TABLE IF NOT EXISTS todos (
+            id SERIAL PRIMARY KEY,
+            title VARCHAR(255) NOT NULL,
+            completed BOOLEAN DEFAULT false,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+         );
+      `);
+      
+      // Insert seed data if table is empty
+      const result = await pool.query('SELECT COUNT(*) FROM todos');
+      if (parseInt(result.rows[0].count) === 0) {
+         await pool.query(`
+            INSERT INTO todos (title, completed) VALUES
+              ('Learn Docker', false),
+              ('Setup CI/CD', true),
+              ('Deploy to production', false)
+            ON CONFLICT DO NOTHING;
+         `);
+         console.log('✅ Database initialized with seed data');
+      } else {
+         console.log('✅ Database table already exists');
+      }
+   } catch (err) {
+      console.error('❌ Database initialization error:', err.message);
+   }
+};
+
+// Initialize database on startup (not in test mode)
+if (process.env.NODE_ENV !== 'test') {
+   initializeDatabase();
+}
+
 // In-memory fallback for tests (avoids needing a running Postgres)
 const useMemoryDb = process.env.NODE_ENV === 'test';
 const memDb = {
