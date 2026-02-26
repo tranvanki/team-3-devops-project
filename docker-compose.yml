@@ -1,4 +1,3 @@
-
 services:
   frontend:
     build: ./frontend
@@ -16,18 +15,8 @@ services:
     container_name: backend
     ports:
       - "8080:8080"
-    environment:
-      - DATABASE_URL=postgresql://todos_db_t7lp_user:k3yN319l6w5FYMV35VAHEl8St10BwPHN@dpg-d6fcb0o8tnhs73cn4big-a.singapore-postgres.render.com/todos_db_t7lp
-      - DB_HOST=dpg-d6fcb0o8tnhs73cn4big-a.singapore-postgres.render.com
-      - DB_PORT=5432
-      - DB_NAME=todos_db_t7lp
-      - DB_USER=todos_db_t7lp_user
-      - DB_PASSWORD=k3yN319l6w5FYMV35VAHEl8St10BwPHN
-      - DB_SSL=true
-    
-    depends_on:
-      postgres:
-        condition: service_healthy
+    env_file:
+      - ./backend/.env 
     healthcheck:
       test: ['CMD-SHELL', 'wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1']
       interval: 10s
@@ -37,29 +26,6 @@ services:
     networks:
       - app-network
 
-  postgres:
-    image: postgres:15-alpine
-    container_name: postgres
-    environment:
-      - POSTGRES_DB=todos_db
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./database/database.sql:/docker-entrypoint-initdb.d/init.sql
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres']
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - app-network
-
 networks:
   app-network:
     driver: bridge
-
-volumes:
-  postgres_data:
