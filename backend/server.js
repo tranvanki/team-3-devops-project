@@ -8,14 +8,22 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
-// BUG #1: Wrong default password - doesn't match docker-compose!
-const pool = new Pool({
-   user: process.env.DB_USER || 'postgres',
-   host: process.env.DB_HOST || 'localhost',
-   database: process.env.DB_NAME || 'tododb',
-   password: process.env.DB_PASSWORD || process.env.POSTGRES_PASSWORD || 'postgres',
-   port: process.env.DB_PORT || 5432,
-});
+const shouldUseSsl = process.env.DB_SSL === 'true' || process.env.NODE_ENV === 'production';
+const sslConfig = shouldUseSsl ? { rejectUnauthorized: false } : false;
+
+const pool = process.env.DATABASE_URL
+   ? new Pool({
+        connectionString: process.env.DATABASE_URL,
+        ssl: sslConfig,
+     })
+   : new Pool({
+        user: process.env.DB_USER || 'postgres',
+        host: process.env.DB_HOST || 'localhost',
+        database: process.env.DB_NAME || 'tododb',
+        password: process.env.DB_PASSWORD || process.env.POSTGRES_PASSWORD || 'postgres',
+        port: process.env.DB_PORT || 5432,
+        ssl: sslConfig,
+     });
 
 // In-memory fallback for tests (avoids needing a running Postgres)
 const useMemoryDb = process.env.NODE_ENV === 'test';
