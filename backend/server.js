@@ -8,25 +8,25 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
-// BUG #1: Wrong default password - doesn't match docker-compose!
-const pool = new Pool({
-   user: process.env.DB_USER || 'postgres',
-   host: process.env.DB_HOST || 'localhost',
-   database: process.env.DB_NAME || 'tododb',
-   password: process.env.DB_PASSWORD || process.env.POSTGRES_PASSWORD || 'postgres',
-   port: process.env.DB_PORT || 5432,
-});
+// // BUG #1: Wrong default password - doesn't match docker-compose!
+// const pool = new Pool({
+//    user: process.env.DB_USER || 'postgres',
+//    host: process.env.DB_HOST || 'localhost',
+//    database: process.env.DB_NAME || 'tododb',
+//    password: process.env.DB_PASSWORD || process.env.POSTGRES_PASSWORD || 'postgres',
+//    port: process.env.DB_PORT || 5432,
+// });
 
-// In-memory fallback for tests (avoids needing a running Postgres)
-const useMemoryDb = process.env.NODE_ENV === 'test';
-const memDb = {
-   todos: [],
-   nextId: 1,
-};
+// // In-memory fallback for tests (avoids needing a running Postgres)
+// const useMemoryDb = process.env.NODE_ENV === 'test';
+// const memDb = {
+//    todos: [],
+//    nextId: 1,
+// };
 
-app.get('/health', (req, res) => {
-   res.json({ status: 'healthy', version: '1.0.0' });
-});
+// app.get('/health', (req, res) => {
+//    res.json({ status: 'healthy', version: '1.0.0' });
+// });
 
 // GET todos
 app.get('/api/todos', async (req, res) => {
