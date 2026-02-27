@@ -16,9 +16,18 @@ function App() {
     try {
       const res = await fetch(`${API_URL}/api/todos`);
       const data = await res.json();
-      setTodos(data);
+      
+      // ✅ Kiểm tra data là array trước khi set state
+      if (Array.isArray(data)) {
+        setTodos(data);
+      } else {
+        // Nếu là error object, set empty array và log lỗi
+        console.error('API Error:', data);
+        setTodos([]);
+      }
     } catch (err) {
       console.error('Fetch error:', err);
+      setTodos([]);
     }
   };
 

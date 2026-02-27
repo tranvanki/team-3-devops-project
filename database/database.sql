@@ -13,3 +13,4 @@ INSERT INTO todos (title, completed) VALUES
   ('Setup CI/CD', true),
   ('Deploy to production', false)
 ON CONFLICT DO NOTHING;
+  
