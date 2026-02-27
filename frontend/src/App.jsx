@@ -17,7 +17,7 @@ function App() {
       const res = await fetch(`${API_URL}/api/todos`);
       const data = await res.json();
       
-      // ✅ Kiểm tra data là array trước khi set state
+   
       if (Array.isArray(data)) {
         setTodos(data);
       } else {
